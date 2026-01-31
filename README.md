@@ -5,7 +5,7 @@ This project analyzes the locations of traffic signals across various regions in
 ## Features
 
 - **Data Sources:**
-  - CSV and GeoJSON files for multiple Indian states and cities
+  - CSV and GeoJSON files for multiple Indian states and cities.
 - **Scripts:**
   - Clustering with DBSCAN
   - GeoJSON to CSV conversion
