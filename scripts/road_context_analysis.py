@@ -111,6 +111,10 @@ def main():
             df['criticality_score'] = importance_scores
             
             bold_color_print(f"Filtered out {filtered_count} signals that were too far from road infrastructure (likely railway/outliers).", "yellow")
+            
+            # Save the enriched data back to the CSV
+            df.to_csv(input_file, index=False)
+            console.print(f"[bold green]Data saved successfully to {input_file}[/bold green]")
 
     except Exception as e:
         bold_color_print(f"Error fetching road data: {e}", "red")
