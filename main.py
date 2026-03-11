@@ -4,6 +4,7 @@ from scripts import (
     get_traffic_geojson_by_name,
     geojson_to_csv,
     merge_csvs,
+    signal_analytics_report,
 )
 
 from utils.rich_components import bold_color_print, numbered_list_panel, print_panel, line_title, box_text
@@ -19,6 +20,7 @@ available_scripts = [
     ("Get GeoJSON by name", get_traffic_geojson_by_name.main),
     ("Convert GeoJSON to CSV", geojson_to_csv.main),
     ("Merge CSVs", merge_csvs.main),
+    ("Signal Analytics Report", signal_analytics_report.main),
 ]
 
 
