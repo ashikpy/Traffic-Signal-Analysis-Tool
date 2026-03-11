@@ -6,6 +6,7 @@ from scipy.spatial import KDTree
 from rich.console import Console
 from rich.table import Table
 from rich.panel import Panel
+import plotly.express as px
 from utils.csv_region_selector import csv_region_selector
 from utils.rich_components import bold_color_print
 
@@ -78,6 +79,20 @@ def calculate_analytics(df, region_name):
         color = "magenta"
 
     console.print(Panel(f"[bold {color}]Engineer's Insight:[/bold {color}]\n{insight}", expand=False))
+
+    # Add Visualization for the report
+    fig = px.histogram(
+        nn_distances, 
+        nbins=30, 
+        title=f"Signal Spacing Distribution: {region_name}",
+        labels={'value': 'Spacing (meters)', 'count': 'Frequency'},
+        color_discrete_sequence=['#3366CC']
+    )
+    fig.add_vline(x=avg_spacing, line_dash="dash", line_color="red", annotation_text="Avg")
+    fig.update_layout(showlegend=False)
+    
+    bold_color_print("\nOpening Spacing Distribution Chart...", "cyan")
+    fig.show()
 
 def main():
     try:

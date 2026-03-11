@@ -12,7 +12,9 @@ from visualization import (
     lon_lat_visualizer,
     dbscan_cluster_visualizer,
     heatmap_maker,
-    visualize_states
+    visualize_states,
+    voronoi_visualizer,
+    corridor_visualizer
 )
 
 
@@ -30,6 +32,8 @@ available_visualizations = [
     ("Visualize Clusters with DBSCAN",
      dbscan_cluster_visualizer.main),
     ("Visualize States", visualize_states.main),
+    ("Visualize Influence Map (Voronoi)", voronoi_visualizer.main),
+    ("Visualize Signal Corridors", corridor_visualizer.main),
 ]
 
 
