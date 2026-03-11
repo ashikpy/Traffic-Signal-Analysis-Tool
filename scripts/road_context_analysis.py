@@ -31,12 +31,16 @@ def main():
     try:
         with console.status(f"[bold green]Fetching Road Network for {region_name} from OSM...[/bold green]"):
             # Download the graph for the area
-            # network_type='drive' ensures we only get roads for cars
-            G = ox.graph_from_bbox(
-                north=max_lat + 0.01, south=min_lat - 0.01, 
-                east=max_lon + 0.01, west=min_lon - 0.01, 
-                network_type='drive'
-            )
+            # Handle different OSMnx versions for graph_from_bbox
+            north, south = max_lat + 0.01, min_lat - 0.01
+            east, west = max_lon + 0.01, min_lon - 0.01
+            
+            try:
+                # Newer OSMnx versions (v2.0+)
+                G = ox.graph_from_bbox(bbox=(north, south, east, west), network_type='drive')
+            except TypeError:
+                # Older OSMnx versions
+                G = ox.graph_from_bbox(north, south, east, west, network_type='drive')
             
             # Convert graph edges to a GeoDataFrame
             nodes, edges = ox.graph_to_gdfs(G)
