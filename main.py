@@ -6,7 +6,6 @@ from scripts import (
     merge_csvs,
     signal_analytics_report,
     network_topology_analysis,
-    signal_gap_analysis,
     road_context_analysis,
 )
 
@@ -27,7 +26,6 @@ available_scripts = [
     ("Merge CSVs", merge_csvs.main),
     ("Signal Analytics Report", signal_analytics_report.main),
     ("Network Topology Analysis", network_topology_analysis.main),
-    ("Signal Placement Suggestion (Gap Analysis)", signal_gap_analysis.main),
     ("Road Context & Criticality Analysis", road_context_analysis.main),
 ]
 
