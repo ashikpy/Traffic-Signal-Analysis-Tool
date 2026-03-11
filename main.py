@@ -16,7 +16,8 @@ from visualization import (
     heatmap_maker,
     visualize_states,
     voronoi_visualizer,
-    corridor_visualizer
+    corridor_visualizer,
+    skyline_3d_visualizer,
 )
 
 
@@ -38,6 +39,7 @@ available_visualizations = [
     ("Visualize States", visualize_states.main),
     ("Visualize Influence Map (Voronoi)", voronoi_visualizer.main),
     ("Visualize Signal Corridors", corridor_visualizer.main),
+    ("Visualize 3D Strategic Skyline", skyline_3d_visualizer.main),
 ]
 
 
