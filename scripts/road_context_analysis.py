@@ -62,20 +62,34 @@ def main():
             
             road_types = []
             importance_scores = []
+            valid_indices = []
+            filtered_count = 0
             
-            # Map road types to importance (1-10)
-            importance_map = {
-                'motorway': 10, 'trunk': 9, 'primary': 8, 
-                'secondary': 6, 'tertiary': 4, 'residential': 2, 
-                'living_street': 1, 'unclassified': 2
-            }
+            # Distance threshold (meters) - Road signals should be within 20m of a road edge
+            DIST_THRESHOLD = 20
 
-            for edge in nearest_edges:
-                # Handle both (u, v, k) tuples and single ID indices
+            for i, edge_info in enumerate(nearest_edges):
                 try:
-                    edge_data = edges.loc[edge]
+                    edge_data = edges.loc[edge_info]
                 except (KeyError, TypeError):
-                    edge_data = edges.iloc[edge]
+                    edge_data = edges.iloc[edge_info]
+                
+                # Calculate Distance to the edge (approximation)
+                # Note: ox.nearest_edges doesn't return distance, but we can verify it
+                u, v, k = edge_info
+                # Get coords of the signal
+                sig_geom = Point(df.iloc[i]['lon'], df.iloc[i]['lat'])
+                # Get the actual line geometry of the road
+                road_geom = edge_data['geometry']
+                
+                # We need to project to UTM for accurate meter-distance
+                # but since we already have gdf_utm we can use its CRS
+                sig_point_utm = gpd.GeoSeries([sig_geom], crs="EPSG:4326").to_crs(edges.crs).iloc[0]
+                dist = sig_point_utm.distance(road_geom)
+                
+                if dist > DIST_THRESHOLD:
+                    filtered_count += 1
+                    continue
                 
                 # highway tag contains road type (can be a list)
                 h_type = edge_data['highway']
@@ -84,9 +98,14 @@ def main():
                 
                 road_types.append(h_type)
                 importance_scores.append(importance_map.get(str(h_type), 2))
+                valid_indices.append(i)
 
+            # Rebuild dataframe with only valid road-aligned signals
+            df = df.iloc[valid_indices].copy()
             df['road_type'] = road_types
             df['criticality_score'] = importance_scores
+            
+            bold_color_print(f"Filtered out {filtered_count} signals that were too far from road infrastructure (likely railway/outliers).", "yellow")
 
     except Exception as e:
         bold_color_print(f"Error fetching road data: {e}", "red")

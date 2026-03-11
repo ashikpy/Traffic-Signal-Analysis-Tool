@@ -18,7 +18,10 @@ def fetch_traffic_signals(city_name):
     query = f"""
     [out:json][timeout:300];
     area["name:en"="{city_name}"]->.searchArea;
-    node["highway"="traffic_signals"](area.searchArea);
+    (
+      node["highway"="traffic_signals"]["railway"!~"."](area.searchArea);
+      node["highway"="traffic_signals"]["train"!~"."](area.searchArea);
+    );
     out body;
     >;
     out skel qt;
