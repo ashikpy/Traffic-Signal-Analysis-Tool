@@ -2,6 +2,7 @@ import os
 import pandas as pd
 import geopandas as gpd
 import osmnx as ox
+from shapely.geometry import Point
 from rich.console import Console
 from rich.table import Table
 from rich.progress import Progress
@@ -52,12 +53,12 @@ def main():
                         # Old versions that want north, south, east, west
                         G = ox.graph_from_bbox(north, south, east, west, network_type='drive')
             
-            # Convert graph edges to a GeoDataFrame
+            # Convert graph edges to a GeoDataFrame and project for distance
             nodes, edges = ox.graph_to_gdfs(G)
+            edges_utm = edges.to_crs(edges.estimate_utm_crs())
             
         with console.status("[bold blue]Matching Signals to Road Classes...[/bold blue]"):
             # Find the nearest edge (road) for each signal
-            # ox.nearest_edges is efficient
             nearest_edges = ox.nearest_edges(G, df['lon'], df['lat'])
             
             road_types = []
@@ -65,27 +66,31 @@ def main():
             valid_indices = []
             filtered_count = 0
             
+            # Map road types to importance (1-10)
+            importance_map = {
+                'motorway': 10, 'trunk': 9, 'primary': 8, 
+                'secondary': 6, 'tertiary': 4, 'residential': 2, 
+                'living_street': 1, 'unclassified': 2
+            }
+            
             # Distance threshold (meters) - Road signals should be within 20m of a road edge
             DIST_THRESHOLD = 20
 
             for i, edge_info in enumerate(nearest_edges):
                 try:
+                    edge_data_utm = edges_utm.loc[edge_info]
                     edge_data = edges.loc[edge_info]
                 except (KeyError, TypeError):
+                    edge_data_utm = edges_utm.iloc[edge_info]
                     edge_data = edges.iloc[edge_info]
                 
-                # Calculate Distance to the edge (approximation)
-                # Note: ox.nearest_edges doesn't return distance, but we can verify it
-                u, v, k = edge_info
-                # Get coords of the signal
+                # Calculate Distance to the edge (in meters)
                 sig_geom = Point(df.iloc[i]['lon'], df.iloc[i]['lat'])
-                # Get the actual line geometry of the road
-                road_geom = edge_data['geometry']
+                road_geom_utm = edge_data_utm['geometry']
                 
-                # We need to project to UTM for accurate meter-distance
-                # but since we already have gdf_utm we can use its CRS
-                sig_point_utm = gpd.GeoSeries([sig_geom], crs="EPSG:4326").to_crs(edges.crs).iloc[0]
-                dist = sig_point_utm.distance(road_geom)
+                # Project signal point to the same UTM CRS
+                sig_point_utm = gpd.GeoSeries([sig_geom], crs="EPSG:4326").to_crs(edges_utm.crs).iloc[0]
+                dist = sig_point_utm.distance(road_geom_utm)
                 
                 if dist > DIST_THRESHOLD:
                     filtered_count += 1
