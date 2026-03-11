@@ -5,6 +5,7 @@ from scripts import (
     geojson_to_csv,
     merge_csvs,
     signal_analytics_report,
+    network_topology_analysis,
 )
 
 from utils.rich_components import bold_color_print, numbered_list_panel, print_panel, line_title, box_text
@@ -23,6 +24,7 @@ available_scripts = [
     ("Convert GeoJSON to CSV", geojson_to_csv.main),
     ("Merge CSVs", merge_csvs.main),
     ("Signal Analytics Report", signal_analytics_report.main),
+    ("Network Topology Analysis", network_topology_analysis.main),
 ]
 
 
