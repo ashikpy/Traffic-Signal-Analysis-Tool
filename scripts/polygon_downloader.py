@@ -2,7 +2,7 @@ import overpy
 import osmnx as ox
 import json
 import os
-from utils.contstants import geojson_outline_dir
+from utils.constants import geojson_outline_dir
 from rich.console import Console
 from rich.prompt import Prompt
 from rich.table import Table

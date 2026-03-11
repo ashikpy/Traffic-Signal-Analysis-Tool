@@ -1,13 +1,14 @@
-
+from pathlib import Path
 from utils.tabulate_dir import tabulate_files
 from utils.rich_tabulate import rich_tablulate
-from utils.contstants import csv_dir
+from utils.constants import csv_dir
 
 # NEEDED
 
 
 def main():
-    output_dir = "data/traffic_csv"
+    output_dir = Path("data/traffic_csv")
+    output_dir.mkdir(parents=True, exist_ok=True)
 
     file_paths = []
 
@@ -54,15 +55,15 @@ def main():
             else:
                 merged_data.extend(line.strip() for line in lines[1:])
 
-    city_names = [fp.split("/")[-1].split('.')[0].split('_')
-                  [0].capitalize() for fp in file_paths]
+    city_names = [Path(fp).stem.split('_')[0].capitalize() for fp in file_paths]
     merged_file_name = "_".join(city_names)
-    with open(f"{output_dir}/{merged_file_name}_traffic_signals.csv", 'w') as f:
+    output_file = output_dir / f"{merged_file_name}_traffic_signals.csv"
+    with open(output_file, 'w') as f:
         for line in merged_data:
             f.write(line + '\n')
 
     print(
-        f"Merged CSV file created at: {output_dir}/{merged_file_name}_traffic_signals.csv")
+        f"Merged CSV file created at: {output_file}")
 
 
 if __name__ == "__main__":

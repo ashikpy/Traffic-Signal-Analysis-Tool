@@ -1,5 +1,5 @@
 from scripts.polygon_downloader import download_state_polygon
-from utils.contstants import geojson_outline_dir
+from utils.constants import geojson_outline_dir
 from utils.csv_region_selector import csv_region_selector
 
 import pandas as pd

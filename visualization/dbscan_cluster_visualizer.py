@@ -1,4 +1,5 @@
 import plotly.graph_objects as go
+from rich.prompt import FloatPrompt, IntPrompt
 from scripts.clustering_dbcsan import run_dbscan
 from utils.csv_region_selector import csv_region_selector
 from rich.console import Console
@@ -6,19 +7,20 @@ from rich.table import Table
 from visualization.bbox_visualizer import bbox_visualzier
 from utils.rich_components import bold_color_print, bold_input
 
-
 console = Console()
-
-# NEEDED
 
 
 def main():
     input_file, region_name = csv_region_selector()
     bold_color_print(f"Selected Region: {region_name}", "yellow")
 
-    eps = 0.05
+    # Interactive parameter tuning
+    eps = FloatPrompt.ask("Enter DBSCAN epsilon (eps)", default=0.05)
+    min_samples = IntPrompt.ask(
+        "Enter DBSCAN minimum samples (min_samples)", default=5)
+
     with console.status("[bold green]Running DBSCAN clustering...[/bold green]"):
-        df = run_dbscan(input_file, eps=eps, min_samples=5)
+        df = run_dbscan(input_file, eps=eps, min_samples=min_samples)
 
     if 'cluster' not in df.columns:
         bold_color_print(

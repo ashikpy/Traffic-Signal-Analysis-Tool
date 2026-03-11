@@ -1,8 +1,9 @@
+from pathlib import Path
 from utils.rich_tabulate import rich_tablulate
 from utils.tabulate_dir import tabulate_files
 from rich.console import Console
 from rich.prompt import IntPrompt
-from utils.contstants import csv_dir
+from utils.constants import csv_dir
 
 console = Console()
 
@@ -23,8 +24,10 @@ def csv_region_selector(file_dir=csv_dir, tar="csv", purpose=""):
         return
     input_file = original_file[input_index]
 
-    region_name = input_file.split(
-        "/")[-1].split(".")[0].split("_")[0].capitalize()
+    # Use pathlib for clean name extraction
+    file_path = Path(input_file)
+    # Get the part before the first underscore and capitalize
+    region_name = file_path.stem.split("_")[0].capitalize()
 
     return input_file, region_name
 

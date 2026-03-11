@@ -1,31 +1,30 @@
-import geopandas as gpd
-from utils.tabulate_dir import tabulate_files
 import os
+from pathlib import Path
+import geopandas as gpd
 from rich import print
-from rich.prompt import Prompt
+from utils.tabulate_dir import tabulate_files
 from utils.rich_tabulate import rich_tablulate
-from utils.contstants import csv_dir, geojson_dir
+from utils.constants import csv_dir, geojson_dir
 from utils.rich_components import bold_color_print, bold_input
 
-
-# NEEDED
 
 def convert_geojson_to_csv(geojson_path, csv_dir):
     # Load GeoJSON data
     gdf = gpd.read_file(geojson_path)
 
-    # Strip the file name.
-    file_name = geojson_path.split("/")[-1].split(".")[0]
+    # Use pathlib for clean filename extraction
+    file_path = Path(geojson_path)
+    file_name = file_path.stem
 
     # Extract longitude and latitude
     gdf["lon"] = gdf.geometry.x
     gdf["lat"] = gdf.geometry.y
 
     # Export to CSV
-    gdf[["lat", "lon"]].to_csv(
-        csv_dir + f"/{file_name}.csv", index=False)
+    output_path = Path(csv_dir) / f"{file_name}.csv"
+    gdf[["lat", "lon"]].to_csv(output_path, index=False)
 
-    return f"Conversion complete: {geojson_path} to {csv_dir}/{file_name}.csv"
+    return f"Conversion complete: {geojson_path} to {output_path}"
 
 
 def main():
@@ -55,8 +54,9 @@ def main():
             raise IndexError("Index out of range.")
         geojson_path = orignal_list[index]
         bold_color_print(f"Selected file: {geojson_path}", "blue")
+        file_name = Path(geojson_path).stem
         verification = bold_input(
-            f"Your CSV will be saved as [italic]{geojson_path.split('/')[-1].split('.')[0]}.csv[/italic]. Proceed? (Y/N)", color="magenta"
+            f"Your CSV will be saved as [italic]{file_name}.csv[/italic]. Proceed? (Y/N)", color="magenta"
         ).strip().upper()
         if verification != 'Y':
             bold_color_print("Conversion cancelled.", "red")
