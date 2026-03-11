@@ -60,8 +60,13 @@ def main():
                 'living_street': 1, 'unclassified': 2
             }
 
-            for u, v, k in nearest_edges:
-                edge_data = edges.loc[(u, v, k)]
+            for edge in nearest_edges:
+                # Handle both (u, v, k) tuples and single ID indices
+                try:
+                    edge_data = edges.loc[edge]
+                except (KeyError, TypeError):
+                    edge_data = edges.iloc[edge]
+                
                 # highway tag contains road type (can be a list)
                 h_type = edge_data['highway']
                 if isinstance(h_type, list):
