@@ -19,28 +19,38 @@ def main():
         bold_color_print("No data found in CSV.", "red")
         return
 
-    # To avoid crashing on state-wide huge data, we limit the analysis area
-    # by taking the bounding box of the signals
+    # Calculate Area
     min_lon, max_lon = df['lon'].min(), df['lon'].max()
     min_lat, max_lat = df['lat'].min(), df['lat'].max()
     
-    # Check if area is too large (heuristic: > 0.5 degrees is often a whole state)
-    if (max_lon - min_lon) > 0.5 or (max_lat - min_lat) > 0.5:
-        bold_color_print("Warning: Dataset area is very large. Downloading road networks might take time.", "yellow")
+    # Calculate span
+    lon_span = max_lon - min_lon
+    lat_span = max_lat - min_lat
 
+    # 1. Download Road Network
     try:
-        with console.status(f"[bold green]Fetching Road Network for {region_name} from OSM...[/bold green]"):
-            # Download the graph for the area
-            # Handle different OSMnx versions for graph_from_bbox
-            north, south = max_lat + 0.01, min_lat - 0.01
-            east, west = max_lon + 0.01, min_lon - 0.01
-            
-            try:
-                # Newer OSMnx versions (v2.0+)
-                G = ox.graph_from_bbox(bbox=(north, south, east, west), network_type='drive')
-            except TypeError:
-                # Older OSMnx versions
-                G = ox.graph_from_bbox(north, south, east, west, network_type='drive')
+        with console.status(f"[bold green]Analysis area: {lon_span:.2f} x {lat_span:.2f} degrees. Fetching OSM roads...[/bold green]"):
+            # If area is too large, it will take hours. We limit it to a 10km radius from center if it's too big.
+            if lon_span > 0.2 or lat_span > 0.2:
+                bold_color_print("\nArea too large for full download. Focusing on the city center (10km radius)...", "yellow")
+                center_lat, center_lon = df['lat'].mean(), df['lon'].mean()
+                G = ox.graph_from_point((center_lat, center_lon), dist=10000, network_type='drive')
+            else:
+                # Defensive call for different OSMnx versions
+                north, south = max_lat + 0.005, min_lat - 0.005
+                east, west = max_lon + 0.005, min_lon - 0.005
+                
+                # We use positional args first as it's most compatible across many versions
+                try:
+                    # Newest versions (bbox as first positional or keyword)
+                    G = ox.graph_from_bbox(bbox=(north, south, east, west), network_type='drive')
+                except Exception:
+                    try:
+                        # Versions that want a tuple but no keyword
+                        G = ox.graph_from_bbox((north, south, east, west), network_type='drive')
+                    except Exception:
+                        # Old versions that want north, south, east, west
+                        G = ox.graph_from_bbox(north, south, east, west, network_type='drive')
             
             # Convert graph edges to a GeoDataFrame
             nodes, edges = ox.graph_to_gdfs(G)
